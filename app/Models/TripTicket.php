@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class TripTicket extends Model
 {
@@ -25,6 +26,7 @@ class TripTicket extends Model
         'requested_by',
         'approved_by',
         'remarks',
+        'driver_name',
     ];
 
     protected function casts(): array
@@ -94,6 +96,11 @@ class TripTicket extends Model
     public function logs(): HasMany
     {
         return $this->hasMany(TripTicketLog::class)->orderBy('created_at', 'asc');
+    }
+
+    public function travelOrder(): HasOne
+    {
+        return $this->hasOne(TravelOrder::class);
     }
 
     // ── Scopes ───────────────────────────────────────────────────────────────

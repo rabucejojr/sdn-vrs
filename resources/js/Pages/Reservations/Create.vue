@@ -15,13 +15,14 @@ defineProps({
 })
 
 const form = useForm({
-    purpose:       '',
-    date_start:    '',
-    date_end:      '',
-    time_departure:'',
-    time_return:   '',
-    destination:   '',
-    passengers:    [{ name: '', designation: '' }],
+    purpose:        '',
+    date_start:     '',
+    date_end:       '',
+    time_departure: '',
+    time_return:    '',
+    destination:    '',
+    driver_name:    '',
+    passengers:     [{ name: '', designation: '' }],
 })
 
 const conflict = ref(null)
@@ -111,6 +112,15 @@ function submit() {
                         <input id="destination" type="text" v-model="form.destination" required
                                class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500" />
                         <InputError :message="form.errors.destination" class="mt-1" />
+                    </div>
+
+                    <!-- Driver Name -->
+                    <div>
+                        <InputLabel for="driver_name" value="Driver Name (optional)" />
+                        <input id="driver_name" type="text" v-model="form.driver_name"
+                               class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               placeholder="e.g. Juan D. Cruz" />
+                        <InputError :message="form.errors.driver_name" class="mt-1" />
                     </div>
 
                     <!-- Passengers -->

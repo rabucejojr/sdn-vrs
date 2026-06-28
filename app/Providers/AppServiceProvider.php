@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\TravelOrder;
 use App\Models\TripTicket;
 use App\Notifications\EmailVerifiedNotification;
 use App\Notifications\PasswordChangedNotification;
+use App\Observers\TravelOrderObserver;
 use App\Observers\TripTicketObserver;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Verified;
@@ -21,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
         Vite::prefetch(concurrency: 3);
 
         TripTicket::observe(TripTicketObserver::class);
+        TravelOrder::observe(TravelOrderObserver::class);
 
         Event::listen(Verified::class, function ($event) {
             try {

@@ -66,6 +66,7 @@ class UserController extends Controller
     {
         $user = User::create([
             'name'      => $request->name,
+            'position'  => $request->position,
             'email'     => $request->email,
             'role'      => $request->role,
             'password'  => Hash::make(Str::password(32)),
@@ -133,9 +134,10 @@ class UserController extends Controller
             return back()->withErrors(['role' => 'You cannot remove your own administrator role.']);
         }
 
-        $user->name  = $request->name;
-        $user->email = $request->email;
-        $user->role  = $request->role;
+        $user->name     = $request->name;
+        $user->position = $request->position;
+        $user->email    = $request->email;
+        $user->role     = $request->role;
 
         if ($oldEmail !== $request->email) {
             $user->email_verified_at = null;

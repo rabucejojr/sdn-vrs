@@ -33,6 +33,21 @@ function downloadPdf() {
 }
 
 const isAdmin = () => window.__page?.props?.auth?.user?.role === 'admin'
+
+function formatDate(value) {
+    if (!value) return '—'
+    try {
+        const date = new Date(value)
+        if (isNaN(date.getTime())) return String(value)
+        return new Intl.DateTimeFormat('en-PH', {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit', hour12: true,
+            timeZone: 'Asia/Manila',
+        }).format(date)
+    } catch {
+        return String(value)
+    }
+}
 </script>
 
 <template>
@@ -50,6 +65,51 @@ const isAdmin = () => window.__page?.props?.auth?.user?.role === 'admin'
 
         <div class="py-10">
             <div class="mx-auto max-w-4xl space-y-8 px-4 sm:px-6 lg:px-8">
+
+                <!-- ── Actions ── -->
+                <div class="flex flex-wrap items-center justify-between gap-3">
+
+                    <!-- Action buttons (left) -->
+                    <div class="flex flex-wrap gap-2">
+                        <Link v-if="$page.props.auth.user.role === 'admin'
+                                  ? ['pending', 'approved', 'disapproved'].includes(ticket.status)
+                                  : ticket.status === 'pending'"
+                              :href="route('reservations.edit', ticket.ticket_number)"
+                              class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                            Edit
+                        </Link>
+                        <button v-if="ticket.status === 'pending'" type="button"
+                                class="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-600 shadow-sm hover:bg-red-50"
+                                @click="cancel">
+                            Cancel Reservation
+                        </button>
+                        <Link v-if="$page.props.auth.user.role === 'admin' && ticket.status === 'approved' && !ticket.travel_order_number"
+                              :href="route('admin.travel-orders.generate-form', ticket.ticket_number)"
+                              class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700">
+                            Generate Travel Order
+                        </Link>
+                        <Link v-if="ticket.travel_order_number"
+                              :href="route('travel-orders.show', ticket.travel_order_number)"
+                              class="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-white px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm hover:bg-emerald-50">
+                            View Travel Order
+                        </Link>
+                    </div>
+
+                    <!-- Print / PDF (right) -->
+                    <div class="flex gap-2">
+                        <button type="button"
+                                class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                                @click="openPrint">
+                            Print
+                        </button>
+                        <button type="button"
+                                class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+                                @click="downloadPdf">
+                            Download PDF
+                        </button>
+                    </div>
+
+                </div>
 
                 <!-- ── Ticket details ── -->
                 <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -171,54 +231,36 @@ const isAdmin = () => window.__page?.props?.auth?.user?.role === 'admin'
                     </div>
                     <div v-if="logs.length" class="px-6 py-4">
                         <ol class="relative border-l border-gray-200">
-                            <li v-for="(log, i) in logs" :key="log.id" class="mb-6 ml-4 last:mb-0">
+                            <li v-for="(log, i) in logs.slice(0, 3)" :key="log.id" class="mb-6 ml-4 last:mb-0">
                                 <span class="absolute -left-1.5 mt-1 h-3 w-3 rounded-full border-2 border-white"
                                       :class="i === logs.length - 1 ? 'bg-blue-500' : 'bg-gray-400'"></span>
-                                <div v-if="log.to_status !== 'edited'" class="flex flex-wrap items-center gap-2">
+                                <div v-if="!['edited', 'printed', 'pdf_downloaded'].includes(log.to_status)"
+                                     class="flex flex-wrap items-center gap-2">
                                     <StatusBadge v-if="log.from_status" :status="log.from_status" />
                                     <span v-if="log.from_status" class="text-xs text-gray-400">&rarr;</span>
                                     <StatusBadge :status="log.to_status" />
                                 </div>
-                                <div v-else class="text-xs font-medium text-gray-500">&#9998; Edited</div>
+                                <div v-else class="text-xs font-medium text-gray-500">
+                                    <span v-if="log.to_status === 'edited'">&#9998; Edited</span>
+                                    <span v-else-if="log.to_status === 'printed'">&#128438; Printed</span>
+                                    <span v-else-if="log.to_status === 'pdf_downloaded'">&#8659; PDF Downloaded</span>
+                                </div>
                                 <p class="mt-1 text-sm text-gray-700">
                                     <span class="font-medium">{{ log.actor?.name ?? 'System' }}</span>
-                                    <span v-if="!log.from_status && log.to_status !== 'edited'"> filed this reservation.</span>
+                                    <span v-if="!log.from_status && log.to_status !== 'edited' && log.to_status !== 'printed' && log.to_status !== 'pdf_downloaded'"> filed this reservation.</span>
                                     <span v-else-if="log.to_status === 'edited'"> edited this reservation.</span>
+                                    <span v-else-if="log.to_status === 'printed'"> printed this reservation.</span>
+                                    <span v-else-if="log.to_status === 'pdf_downloaded'"> downloaded the PDF.</span>
                                     <span v-else> changed status from <em>{{ log.from_status }}</em> to <em>{{ log.to_status }}</em>.</span>
                                 </p>
                                 <p v-if="log.remarks" class="mt-0.5 text-xs italic text-gray-500">"{{ log.remarks }}"</p>
-                                <time class="mt-0.5 block text-xs text-gray-400">{{ log.created_at }}</time>
+                                <time class="mt-0.5 block text-xs text-gray-400">{{ formatDate(log.created_at) }}</time>
                             </li>
                         </ol>
                     </div>
                     <p v-else class="px-6 py-4 text-sm text-gray-400">No activity recorded yet.</p>
                 </div>
 
-                <!-- ── Bottom actions ── -->
-                <div class="flex flex-wrap items-center gap-3">
-                    <Link v-if="$page.props.auth.user.role === 'admin'
-                              ? ['pending', 'approved', 'disapproved'].includes(ticket.status)
-                              : ticket.status === 'pending'"
-                          :href="route('reservations.edit', ticket.ticket_number)"
-                          class="rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                        Edit
-                    </Link>
-                    <button v-if="ticket.status === 'pending'" type="button"
-                            class="rounded-md bg-white px-4 py-2 text-sm font-medium text-red-600 shadow-sm ring-1 ring-inset ring-red-200 hover:bg-red-50"
-                            @click="cancel">
-                        Cancel Reservation
-                    </button>
-                    <button type="button"
-                            class="rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                            @click="openPrint">
-                        Print
-                    </button>
-                    <button type="button"
-                            class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
-                            @click="downloadPdf">
-                        Download PDF
-                    </button>
-                </div>
 
             </div>
         </div>

@@ -1,3 +1,3 @@
 <template>
-    <img src="/favicon.ico" alt="SDN-VRS" />
+    <img src="/images/dost-logo.png" alt="DOST" />
 </template>

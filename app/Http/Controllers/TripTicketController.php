@@ -62,6 +62,7 @@ class TripTicketController extends Controller
             'time_departure'            => ['nullable', 'date_format:H:i'],
             'time_return'               => ['nullable', 'date_format:H:i'],
             'destination'               => ['required', 'string', 'max:255'],
+            'driver_name'               => ['nullable', 'string', 'max:255'],
             'passengers'                => ['required', 'array', 'min:1'],
             'passengers.*.name'         => ['required', 'string', 'max:255'],
             'passengers.*.designation'  => ['nullable', 'string', 'max:255'],
@@ -88,20 +89,21 @@ class TripTicketController extends Controller
             abort(403);
         }
 
-        $ticket->load(['requester', 'approver', 'vehicle', 'passengers']);
+        $ticket->load(['requester', 'approver', 'vehicle', 'passengers', 'travelOrder']);
 
         return Inertia::render('Reservations/Show', [
             'ticket' => array_merge($ticket->toArray(), [
-                'travel_date_label' => $ticket->travelDateLabel(),
-                'is_multi_day'      => $ticket->isMultiDay(),
-                'vehicle'           => $ticket->vehicle->only('name', 'plate_number'),
+                'travel_date_label'    => $ticket->travelDateLabel(),
+                'is_multi_day'         => $ticket->isMultiDay(),
+                'vehicle'              => $ticket->vehicle->only('name', 'plate_number'),
+                'travel_order_number'  => $ticket->travelOrder?->travel_order_number,
             ]),
             'logs' => $ticket->logs()->with('actor')->get()->map(fn ($l) => [
                 'id'          => $l->id,
                 'from_status' => $l->from_status,
                 'to_status'   => $l->to_status,
                 'remarks'     => $l->remarks,
-                'created_at'  => $l->created_at->format('M d, Y h:i A'),
+                'created_at'  => $l->created_at->setTimezone('Asia/Manila')->format('M d, Y g:i A'),
                 'actor'       => ['name' => $l->actor->name],
             ]),
         ]);
@@ -128,7 +130,7 @@ class TripTicketController extends Controller
 
         return Inertia::render('Reservations/Edit', [
             'ticket'  => array_merge(
-                $ticket->only('ticket_number', 'purpose', 'destination', 'time_departure', 'time_return', 'status'),
+                $ticket->only('ticket_number', 'purpose', 'destination', 'driver_name', 'time_departure', 'time_return', 'status'),
                 [
                     'date_start' => $ticket->date_start?->format('Y-m-d'),
                     'date_end'   => $ticket->date_end?->format('Y-m-d'),
@@ -163,6 +165,7 @@ class TripTicketController extends Controller
             'time_departure'            => ['nullable', 'date_format:H:i'],
             'time_return'               => ['nullable', 'date_format:H:i'],
             'destination'               => ['required', 'string', 'max:255'],
+            'driver_name'               => ['nullable', 'string', 'max:255'],
             'passengers'                => ['required', 'array', 'min:1'],
             'passengers.*.name'         => ['required', 'string', 'max:255'],
             'passengers.*.designation'  => ['nullable', 'string', 'max:255'],
@@ -179,6 +182,7 @@ class TripTicketController extends Controller
         $ticket->update([
             'purpose'        => $validated['purpose'],
             'destination'    => $validated['destination'],
+            'driver_name'    => $validated['driver_name'],
             'date_start'     => $validated['date_start'],
             'date_end'       => $validated['date_end'],
             'date_of_travel' => $validated['date_start'],

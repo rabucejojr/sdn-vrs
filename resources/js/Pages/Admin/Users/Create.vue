@@ -7,9 +7,10 @@ import TextInput from '@/Components/TextInput.vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 
 const form = useForm({
-    name:  '',
-    email: '',
-    role:  'staff',
+    name:     '',
+    position: '',
+    email:    '',
+    role:     'staff',
 })
 
 function submit() {
@@ -52,6 +53,17 @@ function submit() {
                             autofocus
                         />
                         <InputError :message="form.errors.name" class="mt-1" />
+                    </div>
+
+                    <div>
+                        <InputLabel for="position" value="Position / Designation (optional)" />
+                        <TextInput
+                            id="position"
+                            v-model="form.position"
+                            class="mt-1 block w-full"
+                            placeholder="e.g. Science Research Specialist II"
+                        />
+                        <InputError :message="form.errors.position" class="mt-1" />
                     </div>
 
                     <div>

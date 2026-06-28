@@ -20,7 +20,7 @@ const isLoggedIn = computed(() => page.props.auth?.user != null)
         <header class="border-b border-blue-100 bg-white shadow-sm">
             <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
                 <div class="flex items-center gap-3">
-                    <img src="/favicon.ico" alt="DOST Logo" class="h-10 w-10" />
+                    <img src="/images/dost-logo.png" alt="DOST Logo" class="h-10 w-10 object-contain" />
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Department of Science and Technology</p>
                         <p class="text-sm font-bold text-blue-900 leading-tight">Surigao del Norte</p>
@@ -98,7 +98,7 @@ const isLoggedIn = computed(() => page.props.auth?.user != null)
 
         <!-- ── Feature highlights ── -->
         <section class="border-t border-gray-100 bg-white py-14">
-            <div class="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-6 sm:grid-cols-3">
+            <div class="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="rounded-lg border border-gray-100 p-6 shadow-sm">
                     <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-700 text-lg font-bold">1</div>
                     <h3 class="text-sm font-semibold text-gray-800">File a Reservation</h3>
@@ -113,6 +113,11 @@ const isLoggedIn = computed(() => page.props.auth?.user != null)
                     <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-lg font-bold">3</div>
                     <h3 class="text-sm font-semibold text-gray-800">Trip Ticket</h3>
                     <p class="mt-1 text-sm text-gray-500">Generate and download the official DOST trip ticket as a PDF for approved reservations.</p>
+                </div>
+                <div class="rounded-lg border border-gray-100 p-6 shadow-sm">
+                    <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-700 text-lg font-bold">4</div>
+                    <h3 class="text-sm font-semibold text-gray-800">Travel Order</h3>
+                    <p class="mt-1 text-sm text-gray-500">Generate a Local Travel Order from an approved reservation and download it as a PDF for official use.</p>
                 </div>
             </div>
         </section>

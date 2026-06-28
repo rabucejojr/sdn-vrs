@@ -96,9 +96,9 @@
 </head>
 <body>
 
-    <img src="/favicon.ico" alt="DOST Logo" class="logo" />
+    <img src="/images/dost-logo.png" alt="DOST Logo" class="logo" />
 
-    <p class="agency">Republic of the Philippines &mdash; DOST-PSTO Surigao del Norte</p>
+    <p class="agency">PSTO Surigao del Norte</p>
     <p class="system-name">SDN Vehicle Reservation System</p>
 
     <div class="divider"></div>
@@ -113,7 +113,7 @@
     <a href="/dashboard" class="btn">Go to Dashboard</a>
 
     <p class="footer">
-        &copy; {{ date('Y') }} DOST-PSTO Surigao del Norte &mdash; SDN-VRS
+        &copy; {{ date('Y') }} PSTO Surigao del Norte &mdash; SDN-VRS
     </p>
 
 </body>

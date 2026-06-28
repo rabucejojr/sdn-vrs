@@ -15,9 +15,10 @@ const page   = usePage()
 const isSelf = computed(() => page.props.auth.user.id === props.user.id)
 
 const form = useForm({
-    name:  props.user.name,
-    email: props.user.email,
-    role:  props.user.role,
+    name:     props.user.name,
+    position: props.user.position ?? '',
+    email:    props.user.email,
+    role:     props.user.role,
 })
 
 function submit() {
@@ -66,6 +67,17 @@ function submit() {
                             autofocus
                         />
                         <InputError :message="form.errors.name" class="mt-1" />
+                    </div>
+
+                    <div>
+                        <InputLabel for="position" value="Position / Designation (optional)" />
+                        <TextInput
+                            id="position"
+                            v-model="form.position"
+                            class="mt-1 block w-full"
+                            placeholder="e.g. Science Research Specialist II"
+                        />
+                        <InputError :message="form.errors.position" class="mt-1" />
                     </div>
 
                     <div>

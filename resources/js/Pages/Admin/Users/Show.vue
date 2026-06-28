@@ -66,6 +66,10 @@ function formatLastActivity(unixTs) {
                             <dd class="col-span-2 text-gray-900">{{ user.name }}</dd>
                         </div>
                         <div class="grid grid-cols-1 gap-1 px-6 py-3 sm:grid-cols-3 sm:gap-4">
+                            <dt class="font-medium text-gray-500">Position</dt>
+                            <dd class="col-span-2 text-gray-900">{{ user.position || '—' }}</dd>
+                        </div>
+                        <div class="grid grid-cols-1 gap-1 px-6 py-3 sm:grid-cols-3 sm:gap-4">
                             <dt class="font-medium text-gray-500">Email</dt>
                             <dd class="col-span-2 text-gray-900">{{ user.email }}</dd>
                         </div>

@@ -4,6 +4,9 @@ use App\Http\Controllers\ConflictCheckController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TravelOrderAdminController;
+use App\Http\Controllers\TravelOrderController;
+use App\Http\Controllers\TravelOrderPrintController;
 use App\Http\Controllers\TripTicketAdminController;
 use App\Http\Controllers\TripTicketController;
 use App\Http\Controllers\TripTicketExportController;
@@ -50,6 +53,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/reservations/check-conflict', [ConflictCheckController::class, 'check'])
          ->name('api.reservations.check-conflict');
 
+    // Travel Orders (all authenticated users)
+    Route::get('/travel-orders',          [TravelOrderController::class, 'index'])->name('travel-orders.index');
+    Route::get('/travel-orders/{travelOrder}',       [TravelOrderController::class, 'show'])->name('travel-orders.show');
+    Route::get('/travel-orders/{travelOrder}/print', [TravelOrderPrintController::class, 'print'])->name('travel-orders.print');
+    Route::get('/travel-orders/{travelOrder}/pdf',   [TravelOrderPrintController::class, 'pdf'])->name('travel-orders.pdf');
+
     // Notifications
     Route::get('/notifications',             [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/poll',        [NotificationController::class, 'poll'])->name('notifications.poll');
@@ -58,6 +67,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ── Admin-only routes ────────────────────────────────────────────────────
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+
+        // Travel Orders (admin-only management)
+        // generate routes MUST come before {travelOrder} to avoid routing ambiguity
+        Route::get('/travel-orders/create',                          [TravelOrderController::class, 'create'])->name('travel-orders.create');
+        Route::post('/travel-orders',                                [TravelOrderController::class, 'store'])->name('travel-orders.store');
+        Route::get('/travel-orders/generate/{ticket}',               [TravelOrderAdminController::class, 'generateForm'])->name('travel-orders.generate-form');
+        Route::post('/travel-orders/generate/{ticket}',              [TravelOrderAdminController::class, 'generate'])->name('travel-orders.generate');
+        Route::get('/travel-orders/{travelOrder}/edit',              [TravelOrderController::class, 'edit'])->name('travel-orders.edit');
+        Route::put('/travel-orders/{travelOrder}',                   [TravelOrderController::class, 'update'])->name('travel-orders.update');
+        Route::patch('/travel-orders/{travelOrder}/issue',           [TravelOrderAdminController::class, 'issue'])->name('travel-orders.issue');
+        Route::patch('/travel-orders/{travelOrder}/cancel',          [TravelOrderAdminController::class, 'cancel'])->name('travel-orders.cancel');
 
         // Reservation actions
         Route::patch('/reservations/{ticket}/approve',    [TripTicketAdminController::class, 'approve'])->name('reservations.approve');

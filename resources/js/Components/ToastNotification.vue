@@ -19,6 +19,7 @@ const buttonLabel = computed(() => {
     const a = props.toast.action
     if (a === 'deactivated') return 'Go to Login →'
     if (a === 'email_verified' || a === 'password_changed' || a === 'account_created' || a === 'role_changed') return 'Go to Dashboard →'
+    if (a === 'travel_order_issued') return 'View Travel Order →'
     return 'View →'
 })
 

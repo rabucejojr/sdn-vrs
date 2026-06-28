@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TripTicket;
+use App\Models\TripTicketLog;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class TripTicketPrintController extends Controller
@@ -10,6 +11,13 @@ class TripTicketPrintController extends Controller
     public function print(TripTicket $ticket): \Illuminate\View\View
     {
         $ticket->load(['requester', 'approver', 'passengers', 'vehicle']);
+
+        TripTicketLog::create([
+            'trip_ticket_id' => $ticket->id,
+            'from_status'    => null,
+            'to_status'      => 'printed',
+            'changed_by'     => auth()->id(),
+        ]);
 
         $mode = 'screen';
 
@@ -19,6 +27,13 @@ class TripTicketPrintController extends Controller
     public function pdf(TripTicket $ticket): \Illuminate\Http\Response
     {
         $ticket->load(['requester', 'approver', 'passengers', 'vehicle']);
+
+        TripTicketLog::create([
+            'trip_ticket_id' => $ticket->id,
+            'from_status'    => null,
+            'to_status'      => 'pdf_downloaded',
+            'changed_by'     => auth()->id(),
+        ]);
 
         $mode = 'pdf';
 

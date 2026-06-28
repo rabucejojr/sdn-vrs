@@ -459,7 +459,7 @@
                 <div class="sig-role">&nbsp;</div>
                 <div class="sig-spacer"></div>
                 @if($mode === 'screen')
-                    <input type="text" id="driver-input" class="sig-input" placeholder="Driver's Name" style="font-weight:bold;text-transform:uppercase;" />
+                    <input type="text" id="driver-input" class="sig-input" placeholder="Driver's Name" style="font-weight:bold;text-transform:uppercase;" value="{{ strtoupper($ticket->driver_name ?? '') }}" />
                 @else
                     <span class="sig-blank"></span>
                 @endif
@@ -497,6 +497,9 @@
             input.addEventListener('input', function () {
                 meta.textContent = formatMeta(this.value);
             });
+
+            // populate meta from stored value on load
+            if (input.value) meta.textContent = formatMeta(input.value);
         })();
     </script>
     @endif

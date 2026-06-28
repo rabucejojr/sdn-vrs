@@ -6,9 +6,7 @@ function addRow() {
 }
 
 function removeRow(index) {
-    if (passengers.value.length > 1) {
-        passengers.value.splice(index, 1)
-    }
+    passengers.value.splice(index, 1)
 }
 </script>
 
@@ -25,7 +23,6 @@ function removeRow(index) {
                         v-model="p.name"
                         type="text"
                         placeholder="Full name"
-                        required
                         class="block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     />
                 </div>
@@ -40,8 +37,7 @@ function removeRow(index) {
             </div>
             <button
                 type="button"
-                :disabled="passengers.length === 1"
-                class="mt-0.5 shrink-0 rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-30"
+                class="mt-0.5 shrink-0 rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
                 @click="removeRow(i)"
                 title="Remove"
             >
