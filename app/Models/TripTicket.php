@@ -49,7 +49,7 @@ class TripTicket extends Model
             if (empty($ticket->vehicle_id)) {
                 $ticket->vehicle_id = Vehicle::getActive()->id;
             }
-            $ticket->ticket_number = DocumentNumber::tripTicket($ticket->vehicle_id);
+            $ticket->ticket_number = DocumentNumber::tripTicket();
             $ticket->date_filed = $now->toDateString();
             $ticket->date_of_travel = $ticket->date_start;
         });

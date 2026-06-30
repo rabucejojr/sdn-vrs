@@ -123,6 +123,8 @@ class ReservationSecurityAndWorkflowTest extends TestCase
 
     public function test_document_numbers_are_sequential(): void
     {
+        $this->travelTo(now()->setDate(2026, 6, 30));
+
         $staff = User::factory()->create();
         $vehicle = $this->vehicle();
 
@@ -132,8 +134,10 @@ class ReservationSecurityAndWorkflowTest extends TestCase
             'date_end' => now()->addWeeks(2)->toDateString(),
         ]);
 
-        $this->assertStringEndsWith('0001', $first->ticket_number);
-        $this->assertStringEndsWith('0002', $second->ticket_number);
+        $this->assertSame('2026-06-086', $first->ticket_number);
+        $this->assertSame('2026-06-087', $second->ticket_number);
+
+        $this->travelBack();
     }
 
     public function test_staff_dashboard_contains_only_their_trip_details(): void
