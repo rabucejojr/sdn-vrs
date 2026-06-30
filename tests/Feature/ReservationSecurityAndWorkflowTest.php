@@ -57,6 +57,27 @@ class ReservationSecurityAndWorkflowTest extends TestCase
         $this->actingAs($owner)->get(route('reservations.pdf', $ticket))->assertForbidden();
     }
 
+    public function test_pdf_template_includes_the_drivers_name(): void
+    {
+        $owner = User::factory()->create();
+        $ticket = $this->ticket($owner, $this->vehicle(), [
+            'status' => 'approved',
+            'driver_name' => 'Juan Dela Cruz',
+        ])->load(['requester', 'approver', 'passengers', 'vehicle']);
+
+        $html = view('trip-tickets.print', [
+            'ticket' => $ticket,
+            'mode' => 'pdf',
+            'organization' => config('organization'),
+        ])->render();
+
+        $this->assertSame(2, substr_count($html, 'JUAN DELA CRUZ'));
+        $this->assertStringContainsString('IMELDA S. MEZO', $html);
+        $this->assertStringContainsString('<div class="sig-role">Noted by:</div>', $html);
+        $this->assertStringContainsString('<div class="sig-role">Approved by:</div>', $html);
+        $this->assertStringContainsString('<div class="sig-role">Driver\'s name:</div>', $html);
+    }
+
     public function test_approval_rejects_an_overlapping_approved_reservation(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

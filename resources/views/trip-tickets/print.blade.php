@@ -154,10 +154,11 @@
             text-align: left;
             vertical-align: top;
         }
-        .sig-role    { font-weight: bold; font-size: 9pt; }
+        .sig-role    { height: 16px; font-weight: bold; font-size: 9pt; }
         .sig-spacer  { height: 40px; }
         .sig-input {
             width: 88%;
+            height: 18px;
             border: none;
             border-bottom: 1px solid #000;
             background: transparent;
@@ -171,9 +172,9 @@
         .sig-blank {
             display: block;
             width: 88%;
+            height: 18px;
             margin: 0 0 2px;
-            border-top: 1px solid #000;
-            height: 1px;
+            border-bottom: 1px solid #000;
         }
         .sig-sub { font-size: 7.5pt; color: #444; margin-top: 1px; }
 
@@ -230,7 +231,7 @@
                 <td></td>
                 <td></td>
                 <td class="lbl">Driver:</td>
-                <td id="driver-meta">&nbsp;</td>
+                <td id="driver-meta">{{ $ticket->driver_name ? strtoupper($ticket->driver_name) : "\u{00A0}" }}</td>
             </tr>
             <tr>
                 <td></td>
@@ -442,7 +443,7 @@
                 <div class="sig-sub">PSTD, {{ $organization['full_name'] }}</div>
             </td>
             <td>
-                <div class="sig-role">Approved:</div>
+                <div class="sig-role">Approved by:</div>
                 <div class="sig-spacer"></div>
                 @if($mode === 'screen')
                     <input type="text" class="sig-input"
@@ -451,15 +452,17 @@
                         style="font-weight:bold;"
                         readonly />
                 @else
-                    <span class="sig-blank"></span>
+                    <span class="sig-input" style="font-weight:bold;">IMELDA S. MEZO</span>
                 @endif
                 <div class="sig-sub">ARD, Finance and Administrative Services</div>
             </td>
             <td>
-                <div class="sig-role">&nbsp;</div>
+                <div class="sig-role">Driver's name:</div>
                 <div class="sig-spacer"></div>
                 @if($mode === 'screen')
                     <input type="text" id="driver-input" class="sig-input" placeholder="Driver's Name" style="font-weight:bold;text-transform:uppercase;" value="{{ strtoupper($ticket->driver_name ?? '') }}" />
+                @elseif($ticket->driver_name)
+                    <span class="sig-input" style="font-weight:bold;text-transform:uppercase;">{{ strtoupper($ticket->driver_name) }}</span>
                 @else
                     <span class="sig-blank"></span>
                 @endif
@@ -490,8 +493,7 @@
             function formatMeta(raw) {
                 const name = raw.trim().toUpperCase();
                 if (!name) return ' ';
-                const parts = name.split(/\s+/);
-                return parts.length === 1 ? name : parts[0][0] + '. ' + parts.slice(1).join(' ');
+                return name;
             }
 
             input.addEventListener('input', function () {
