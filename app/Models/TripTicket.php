@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 class TripTicket extends Model
 {
@@ -127,5 +128,27 @@ class TripTicket extends Model
         }
 
         return $start->format('M d, Y');
+    }
+
+    public function formattedDriverName(): string
+    {
+        $parts = preg_split('/\s+/', trim((string) $this->driver_name), -1, PREG_SPLIT_NO_EMPTY);
+
+        if (! $parts) {
+            return '';
+        }
+
+        $lastName = Str::title(Str::lower(array_pop($parts)));
+
+        if ($parts === []) {
+            return $lastName;
+        }
+
+        $firstInitial = Str::upper(Str::substr(array_shift($parts), 0, 1));
+        $middleInitial = $parts === []
+            ? ''
+            : Str::upper(Str::substr(array_shift($parts), 0, 1));
+
+        return "{$firstInitial}{$middleInitial}{$lastName}";
     }
 }

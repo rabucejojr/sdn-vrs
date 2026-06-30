@@ -71,7 +71,8 @@ class ReservationSecurityAndWorkflowTest extends TestCase
             'organization' => config('organization'),
         ])->render();
 
-        $this->assertSame(2, substr_count($html, 'JUAN DELA CRUZ'));
+        $this->assertStringContainsString('JDCruz', $html);
+        $this->assertSame(1, substr_count($html, 'JUAN DELA CRUZ'));
         $this->assertStringContainsString('IMELDA S. MEZO', $html);
         $this->assertStringContainsString('<div class="sig-role">Noted by:</div>', $html);
         $this->assertStringContainsString('<div class="sig-role">Approved by:</div>', $html);

@@ -231,7 +231,7 @@
                 <td></td>
                 <td></td>
                 <td class="lbl">Driver:</td>
-                <td id="driver-meta">{{ $ticket->driver_name ? strtoupper($ticket->driver_name) : "\u{00A0}" }}</td>
+                <td id="driver-meta">{{ $ticket->formattedDriverName() ?: "\u{00A0}" }}</td>
             </tr>
             <tr>
                 <td></td>
@@ -491,9 +491,19 @@
             const meta  = document.getElementById('driver-meta');
 
             function formatMeta(raw) {
-                const name = raw.trim().toUpperCase();
-                if (!name) return ' ';
-                return name;
+                const parts = raw.trim().split(/\s+/).filter(Boolean);
+                if (!parts.length) return ' ';
+
+                const lastName = parts.pop().toLowerCase();
+                const formattedLastName = lastName.charAt(0).toUpperCase() + lastName.slice(1);
+                if (!parts.length) return formattedLastName;
+
+                const firstInitial = parts.shift().charAt(0).toUpperCase();
+                const middleInitial = parts.length
+                    ? parts.shift().charAt(0).toUpperCase()
+                    : '';
+
+                return firstInitial + middleInitial + formattedLastName;
             }
 
             input.addEventListener('input', function () {
