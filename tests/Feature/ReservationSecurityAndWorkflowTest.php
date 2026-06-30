@@ -77,6 +77,21 @@ class ReservationSecurityAndWorkflowTest extends TestCase
         $this->assertStringContainsString('<div class="sig-role">Noted by:</div>', $html);
         $this->assertStringContainsString('<div class="sig-role">Approved by:</div>', $html);
         $this->assertStringContainsString('<div class="sig-role">Driver\'s name:</div>', $html);
+        $this->assertSame(2, substr_count($html, $ticket->formattedTicketNumber()));
+    }
+
+    public function test_legacy_ticket_number_is_prefixed_in_the_downloaded_pdf(): void
+    {
+        $owner = User::factory()->create();
+        $ticket = $this->ticket($owner, $this->vehicle(), [
+            'status' => 'approved',
+        ]);
+        $legacyNumber = str_replace('Crosswind-', '', $ticket->ticket_number);
+        $ticket->forceFill(['ticket_number' => $legacyNumber])->saveQuietly();
+
+        $this->actingAs($owner)
+            ->get(route('reservations.pdf', $ticket))
+            ->assertDownload("Crosswind-{$legacyNumber}.pdf");
     }
 
     public function test_approval_rejects_an_overlapping_approved_reservation(): void
@@ -156,8 +171,8 @@ class ReservationSecurityAndWorkflowTest extends TestCase
             'date_end' => now()->addWeeks(2)->toDateString(),
         ]);
 
-        $this->assertSame('2026-06-086', $first->ticket_number);
-        $this->assertSame('2026-06-087', $second->ticket_number);
+        $this->assertSame('Crosswind-2026-06-086', $first->ticket_number);
+        $this->assertSame('Crosswind-2026-06-087', $second->ticket_number);
 
         $this->travelBack();
     }

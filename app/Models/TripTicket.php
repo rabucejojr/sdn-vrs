@@ -151,4 +151,11 @@ class TripTicket extends Model
 
         return "{$firstInitial}{$middleInitial}{$lastName}";
     }
+
+    public function formattedTicketNumber(): string
+    {
+        return Str::startsWith($this->ticket_number, 'Crosswind-')
+            ? $this->ticket_number
+            : 'Crosswind-'.$this->ticket_number;
+    }
 }

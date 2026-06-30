@@ -33,6 +33,6 @@ class TripTicketPrintController extends Controller
         $pdf = Pdf::loadView('trip-tickets.print', compact('ticket', 'mode', 'organization'))
             ->setPaper([0, 0, 612, 936], 'landscape');
 
-        return $pdf->download("{$ticket->ticket_number}.pdf");
+        return $pdf->download($ticket->formattedTicketNumber().'.pdf');
     }
 }

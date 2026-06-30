@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Trip Ticket — {{ $ticket->ticket_number }}</title>
+    <title>Trip Ticket — {{ $ticket->formattedTicketNumber() }}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -219,7 +219,7 @@
                 <td class="lbl">Car Model:</td>
                 <td style="width:83%"><span style="border-bottom:1px solid #000;">{{ $ticket->vehicle?->name ?? '—' }}</span></td>
                 <td class="lbl">Trip Ticket No.:</td>
-                <td style="width:35%">{{ $ticket->ticket_number }}</td>
+                <td style="width:35%">{{ $ticket->formattedTicketNumber() }}</td>
             </tr>
             <tr>
                 <td class="lbl">Plate No.:</td>

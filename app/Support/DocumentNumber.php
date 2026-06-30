@@ -11,7 +11,7 @@ class DocumentNumber
         $period = now()->format('Y-m');
         $sequence = self::next('trip-ticket', $period);
 
-        return "{$period}-".str_pad((string) $sequence, 3, '0', STR_PAD_LEFT);
+        return "Crosswind-{$period}-".str_pad((string) $sequence, 3, '0', STR_PAD_LEFT);
     }
 
     public static function travelOrder(): string
