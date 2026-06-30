@@ -241,7 +241,7 @@ function goToToday() {
                                     <span class="mt-1 block truncate rounded bg-green-100 px-1 py-0.5 text-center text-xs font-semibold text-green-700">
                                         Booked
                                     </span>
-                                    <span class="mt-0.5 block truncate text-center text-xs text-gray-500">
+                                    <span v-if="cell.requester" class="mt-0.5 block truncate text-center text-xs text-gray-500">
                                         {{ cell.requester }}
                                     </span>
                                 </template>

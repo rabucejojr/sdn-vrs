@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('trip_tickets', function (Blueprint $table) {
             $table->foreignId('vehicle_id')
-                  ->nullable()
-                  ->after('id')
-                  ->constrained('vehicles')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->after('id')
+                ->constrained('vehicles')
+                ->restrictOnDelete();
 
             $table->date('date_start')->nullable()->after('date_of_travel');
             $table->date('date_end')->nullable()->after('date_start');

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\DocumentNumber;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -32,10 +33,10 @@ class TripTicket extends Model
     protected function casts(): array
     {
         return [
-            'date_filed'     => 'date',
+            'date_filed' => 'date',
             'date_of_travel' => 'date',
-            'date_start'     => 'date',
-            'date_end'       => 'date',
+            'date_start' => 'date',
+            'date_end' => 'date',
         ];
     }
 
@@ -44,24 +45,12 @@ class TripTicket extends Model
         parent::boot();
 
         static::creating(function ($ticket) {
-            $now   = now();
-            $month = $now->format('m');
-            $year  = $now->format('Y');
-
+            $now = now();
             if (empty($ticket->vehicle_id)) {
                 $ticket->vehicle_id = Vehicle::getActive()->id;
             }
-
-            $count = TripTicket::where('vehicle_id', $ticket->vehicle_id)
-                               ->whereBetween('created_at', [
-                                   $now->copy()->startOfMonth()->toDateTimeString(),
-                                   $now->copy()->endOfMonth()->toDateTimeString(),
-                               ])
-                               ->count() + 1;
-
-            $ticket->ticket_number  = 'Crosswind-' . $year . '-' . $month . '-'
-                                    . str_pad($count, 4, '0', STR_PAD_LEFT);
-            $ticket->date_filed     = $now->toDateString();
+            $ticket->ticket_number = DocumentNumber::tripTicket($ticket->vehicle_id);
+            $ticket->date_filed = $now->toDateString();
             $ticket->date_of_travel = $ticket->date_start;
         });
     }
@@ -105,18 +94,19 @@ class TripTicket extends Model
 
     // ── Scopes ───────────────────────────────────────────────────────────────
 
-    public function scopeConflicting(Builder $query, string $dateStart, string $dateEnd, ?int $excludeId = null): Builder
-    {
+    public function scopeConflicting(
+        Builder $query,
+        string $dateStart,
+        string $dateEnd,
+        ?int $excludeId = null,
+        ?int $vehicleId = null,
+    ): Builder {
         return $query
             ->where('status', 'approved')
+            ->when($vehicleId, fn ($q) => $q->where('vehicle_id', $vehicleId))
             ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
-            ->where(fn ($q) => $q
-                ->whereBetween('date_start', [$dateStart, $dateEnd])
-                ->orWhereBetween('date_end', [$dateStart, $dateEnd])
-                ->orWhere(fn ($q2) => $q2
-                    ->where('date_start', '<=', $dateStart)
-                    ->where('date_end', '>=', $dateEnd))
-            );
+            ->whereDate('date_start', '<=', $dateEnd)
+            ->whereDate('date_end', '>=', $dateStart);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -130,10 +120,10 @@ class TripTicket extends Model
     public function travelDateLabel(): string
     {
         $start = Carbon::parse($this->date_start);
-        $end   = Carbon::parse($this->date_end ?? $this->date_start);
+        $end = Carbon::parse($this->date_end ?? $this->date_start);
 
         if ($this->isMultiDay()) {
-            return $start->format('M d') . ' – ' . $end->format('M d, Y');
+            return $start->format('M d').' – '.$end->format('M d, Y');
         }
 
         return $start->format('M d, Y');

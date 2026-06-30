@@ -29,17 +29,24 @@ const form = useForm({
 })
 
 const conflict = ref(null)
+const conflictError = ref('')
 
 const checkConflict = useDebounceFn(async () => {
     if (!form.date_start) { conflict.value = null; return }
-    const { data } = await axios.get(route('api.reservations.check-conflict'), {
-        params: {
-            date_start: form.date_start,
-            date_end:   form.date_end || form.date_start,
-            exclude:    props.ticket.ticket_number,
-        },
-    })
-    conflict.value = data
+    try {
+        conflictError.value = ''
+        const { data } = await axios.get(route('api.reservations.check-conflict'), {
+            params: {
+                date_start: form.date_start,
+                date_end:   form.date_end || form.date_start,
+                exclude:    props.ticket.ticket_number,
+            },
+        })
+        conflict.value = data
+    } catch {
+        conflict.value = null
+        conflictError.value = 'Availability could not be checked. Approval performs a final conflict check.'
+    }
 }, 300)
 
 watch([() => form.date_start, () => form.date_end], checkConflict)
@@ -100,6 +107,7 @@ function submit() {
                     </div>
 
                     <ConflictAlert :conflict="conflict" />
+                    <p v-if="conflictError" class="text-sm text-amber-700">{{ conflictError }}</p>
 
                     <!-- Times -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -142,7 +150,7 @@ function submit() {
                     </div>
 
                     <div class="flex flex-wrap items-center gap-4">
-                        <PrimaryButton :disabled="form.processing || conflict?.conflict === true">Save Changes</PrimaryButton>
+                        <PrimaryButton :disabled="form.processing || (ticket.status === 'approved' && conflict?.conflict === true)">Save Changes</PrimaryButton>
                         <Link :href="route('reservations.show', ticket.ticket_number)"
                               class="text-sm text-gray-500 hover:underline">
                             Cancel

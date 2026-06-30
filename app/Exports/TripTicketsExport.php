@@ -3,23 +3,23 @@
 namespace App\Exports;
 
 use App\Models\TripTicket;
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TripTicketsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class TripTicketsExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     public function __construct(
         private readonly ?string $status = null,
-        private readonly ?string $from   = null,
-        private readonly ?string $to     = null,
+        private readonly ?string $from = null,
+        private readonly ?string $to = null,
     ) {}
 
-    public function collection(): Collection
+    public function query(): Builder
     {
         $query = TripTicket::with(['requester', 'approver'])
             ->orderBy('date_start', 'desc');
@@ -36,7 +36,7 @@ class TripTicketsExport implements FromCollection, WithHeadings, WithMapping, Sh
             $query->where('date_end', '<=', $this->to);
         }
 
-        return $query->get();
+        return $query;
     }
 
     public function headings(): array
@@ -64,9 +64,9 @@ class TripTicketsExport implements FromCollection, WithHeadings, WithMapping, Sh
             $ticket->date_filed->format('Y-m-d'),
             $ticket->purpose,
             $ticket->date_start?->format('Y-m-d') ?? '',
-            $ticket->date_end?->format('Y-m-d')   ?? '',
+            $ticket->date_end?->format('Y-m-d') ?? '',
             $ticket->time_departure ?? '',
-            $ticket->time_return    ?? '',
+            $ticket->time_return ?? '',
             $ticket->destination,
             ucfirst($ticket->status),
             $ticket->requester->name,

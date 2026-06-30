@@ -16,7 +16,9 @@ class ReservationUpdatedNotification extends Notification implements ShouldQueue
         public readonly TripTicket $ticket,
         public readonly User $actor,
         public readonly string $changesSummary,
-    ) {}
+    ) {
+        $this->afterCommit();
+    }
 
     public function via(object $notifiable): array
     {
@@ -32,12 +34,12 @@ class ReservationUpdatedNotification extends Notification implements ShouldQueue
             : "Reservation {$this->ticket->ticket_number} has been updated by {$this->actor->name}.";
 
         return [
-            'ticket_number'  => $this->ticket->ticket_number,
+            'ticket_number' => $this->ticket->ticket_number,
             'requester_name' => $this->ticket->requester?->name ?? 'Unknown',
-            'action'         => 'updated',
-            'message'        => $message,
-            'remarks'        => $this->changesSummary,
-            'url'            => '/reservations/' . $this->ticket->ticket_number,
+            'action' => 'updated',
+            'message' => $message,
+            'remarks' => $this->changesSummary,
+            'url' => '/reservations/'.$this->ticket->ticket_number,
         ];
     }
 }

@@ -1,0 +1,47 @@
+openapi: 3.1.0
+info:
+  title: SDN-VRS Read API
+  version: 1.0.0
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /reservations:
+    get:
+      summary: List reservations visible to the authenticated user
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, approved, disapproved, completed, cancelled] } }
+        - { name: date_start, in: query, schema: { type: string, format: date } }
+        - { name: date_end, in: query, schema: { type: string, format: date } }
+      responses:
+        '200': { description: Paginated reservation collection }
+        '401': { description: Unauthenticated }
+        '403': { description: Inactive, unverified, or insufficient ability }
+  /reservations/{ticket}:
+    get:
+      summary: Get an authorized reservation
+      parameters:
+        - { name: ticket, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Reservation detail }
+        '403': { description: Not authorized }
+        '404': { description: Not found }
+  /vehicles:
+    get:
+      summary: List vehicles
+      responses:
+        '200': { description: Vehicle collection }
+  /vehicles/{vehicle}:
+    get:
+      summary: Get a vehicle
+      parameters:
+        - { name: vehicle, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Vehicle detail }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum

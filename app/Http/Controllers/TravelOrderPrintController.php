@@ -3,60 +3,38 @@
 namespace App\Http\Controllers;
 
 use App\Models\TravelOrder;
-use App\Models\TravelOrderLog;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 
 class TravelOrderPrintController extends Controller
 {
-    public function print(TravelOrder $travelOrder): \Illuminate\Contracts\View\View
+    public function print(TravelOrder $travelOrder): View
     {
-        $this->authorizeView($travelOrder);
-
-        TravelOrderLog::create([
-            'travel_order_id' => $travelOrder->id,
-            'action'          => 'printed',
-            'changed_by'      => auth()->id(),
-        ]);
+        Gate::authorize('print', $travelOrder);
 
         $travelOrder->load('passengers.user');
 
         return view('travel-orders.print', [
             'order' => $travelOrder,
-            'mode'  => 'screen',
+            'mode' => 'screen',
+            'organization' => config('organization'),
         ]);
     }
 
     public function pdf(TravelOrder $travelOrder): Response
     {
-        $this->authorizeView($travelOrder);
-
-        TravelOrderLog::create([
-            'travel_order_id' => $travelOrder->id,
-            'action'          => 'pdf_downloaded',
-            'changed_by'      => auth()->id(),
-        ]);
+        Gate::authorize('print', $travelOrder);
 
         $travelOrder->load('passengers.user');
 
         $pdf = Pdf::loadView('travel-orders.print', [
             'order' => $travelOrder,
-            'mode'  => 'pdf',
+            'mode' => 'pdf',
+            'organization' => config('organization'),
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download($travelOrder->travel_order_number . '.pdf');
-    }
-
-    private function authorizeView(TravelOrder $travelOrder): void
-    {
-        $user = auth()->user();
-
-        if ($user->isAdmin()) return;
-
-        $isPassenger = $travelOrder->passengers()->where('user_id', $user->id)->exists();
-
-        if ($travelOrder->issued_to !== $user->id && ! $isPassenger) {
-            abort(403);
-        }
+        return $pdf->download($travelOrder->travel_order_number.'.pdf');
     }
 }

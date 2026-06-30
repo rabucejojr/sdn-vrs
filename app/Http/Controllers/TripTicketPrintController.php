@@ -3,43 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Models\TripTicket;
-use App\Models\TripTicketLog;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class TripTicketPrintController extends Controller
 {
-    public function print(TripTicket $ticket): \Illuminate\View\View
+    public function print(TripTicket $ticket): View
     {
+        Gate::authorize('print', $ticket);
         $ticket->load(['requester', 'approver', 'passengers', 'vehicle']);
-
-        TripTicketLog::create([
-            'trip_ticket_id' => $ticket->id,
-            'from_status'    => null,
-            'to_status'      => 'printed',
-            'changed_by'     => auth()->id(),
-        ]);
 
         $mode = 'screen';
+        $organization = config('organization');
 
-        return view('trip-tickets.print', compact('ticket', 'mode'));
+        return view('trip-tickets.print', compact('ticket', 'mode', 'organization'));
     }
 
-    public function pdf(TripTicket $ticket): \Illuminate\Http\Response
+    public function pdf(TripTicket $ticket): Response
     {
+        Gate::authorize('print', $ticket);
         $ticket->load(['requester', 'approver', 'passengers', 'vehicle']);
 
-        TripTicketLog::create([
-            'trip_ticket_id' => $ticket->id,
-            'from_status'    => null,
-            'to_status'      => 'pdf_downloaded',
-            'changed_by'     => auth()->id(),
-        ]);
-
         $mode = 'pdf';
+        $organization = config('organization');
 
         // 8.5 × 13 inches (Philippine long bond paper) in points at 72 pt/inch
-        $pdf = Pdf::loadView('trip-tickets.print', compact('ticket', 'mode'))
-                  ->setPaper([0, 0, 612, 936], 'landscape');
+        $pdf = Pdf::loadView('trip-tickets.print', compact('ticket', 'mode', 'organization'))
+            ->setPaper([0, 0, 612, 936], 'landscape');
 
         return $pdf->download("{$ticket->ticket_number}.pdf");
     }

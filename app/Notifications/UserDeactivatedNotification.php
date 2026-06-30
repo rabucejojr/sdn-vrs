@@ -11,7 +11,10 @@ class UserDeactivatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private readonly User $actor) {}
+    public function __construct(private readonly User $actor)
+    {
+        $this->afterCommit();
+    }
 
     public function via(): array
     {
@@ -21,9 +24,9 @@ class UserDeactivatedNotification extends Notification implements ShouldQueue
     public function toArray(): array
     {
         return [
-            'action'  => 'deactivated',
+            'action' => 'deactivated',
             'message' => "Your account has been deactivated by {$this->actor->name}. Contact an administrator.",
-            'url'     => '/login',
+            'url' => '/login',
         ];
     }
 }

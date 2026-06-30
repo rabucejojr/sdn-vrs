@@ -13,17 +13,17 @@ class TripTicketExportController extends Controller
     {
         $request->validate([
             'status' => ['nullable', 'in:pending,approved,disapproved,completed,cancelled'],
-            'from'   => ['nullable', 'date'],
-            'to'     => ['nullable', 'date', 'after_or_equal:from'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
         ]);
 
-        $filename = 'trip-tickets-' . now()->format('Y-m-d') . '.xlsx';
+        $filename = 'trip-tickets-'.now()->format('Y-m-d').'.xlsx';
 
         return Excel::download(
             new TripTicketsExport(
                 status: $request->query('status'),
-                from:   $request->query('from'),
-                to:     $request->query('to'),
+                from: $request->query('from'),
+                to: $request->query('to'),
             ),
             $filename,
         );

@@ -4,22 +4,31 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class NotificationController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse|Response
     {
         $notifications = auth()->user()
             ->notifications()
             ->latest()
             ->paginate(20);
 
+        if (! $request->expectsJson()) {
+            return Inertia::render('Notifications/Index', [
+                'notifications' => $notifications,
+            ]);
+        }
+
         return response()->json($notifications);
     }
 
     public function poll(Request $request): JsonResponse
     {
-        $user  = auth()->user();
+        $request->validate(['after' => ['nullable', 'date']]);
+        $user = auth()->user();
         $after = $request->query('after');
 
         $query = $user->notifications()->latest();
@@ -29,15 +38,15 @@ class NotificationController extends Controller
         }
 
         $notifications = $query->get()->map(fn ($n) => [
-            'id'         => $n->id,
-            'data'       => $n->data,
-            'read_at'    => $n->read_at,
+            'id' => $n->id,
+            'data' => $n->data,
+            'read_at' => $n->read_at,
             'created_at' => $n->created_at->toIso8601String(),
         ]);
 
         return response()->json([
             'notifications' => $notifications,
-            'unread_count'  => $user->unreadNotifications()->count(),
+            'unread_count' => $user->unreadNotifications()->count(),
         ]);
     }
 

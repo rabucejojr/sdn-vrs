@@ -14,9 +14,9 @@ class PasswordChangedNotification extends Notification
     public function toArray(): array
     {
         return [
-            'action'  => 'password_changed',
+            'action' => 'password_changed',
             'message' => 'Your password was successfully changed.',
-            'url'     => '/dashboard',
+            'url' => '/dashboard',
         ];
     }
 }

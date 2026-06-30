@@ -26,7 +26,7 @@ const { unreadCount, toasts, dismissToast, markRead, markAllRead } = useNotifica
               <div class="flex shrink-0 items-center">
                 <Link :href="route('dashboard')" class="flex items-center gap-2">
                   <img src="/images/dost-logo.png" alt="SDN VRS Logo" class="h-8 w-8" />
-                  <span class="text-sm font-semibold text-gray-800">SDN VRAMS</span>
+                  <span class="text-sm font-semibold text-gray-800">SDN-VRS</span>
                 </Link>
               </div>
 

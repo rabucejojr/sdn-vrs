@@ -10,8 +10,6 @@ const props = defineProps({
     filters: { type: Object, default: () => ({}) },
 })
 
-const isAdmin = window.__page?.props?.auth?.user?.role === 'admin'
-
 const status = ref(props.filters.status ?? '')
 const from   = ref(props.filters.from ?? '')
 const to     = ref(props.filters.to ?? '')
@@ -61,7 +59,7 @@ watch([status, from, to], applyFilters)
                 </div>
 
                 <!-- Table -->
-                <div class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+                <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead class="bg-gray-50">
                             <tr>

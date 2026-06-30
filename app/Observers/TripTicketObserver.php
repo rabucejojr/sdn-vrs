@@ -8,18 +8,19 @@ use App\Models\TripTicketLog;
 use App\Models\User;
 use App\Notifications\NewReservationNotification;
 use App\Notifications\ReservationStatusChangedNotification;
+use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
-class TripTicketObserver
+class TripTicketObserver implements ShouldHandleEventsAfterCommit
 {
     public function created(TripTicket $ticket): void
     {
         TripTicketLog::create([
             'trip_ticket_id' => $ticket->id,
-            'from_status'    => null,
-            'to_status'      => 'pending',
-            'changed_by'     => $ticket->requested_by,
+            'from_status' => null,
+            'to_status' => 'pending',
+            'changed_by' => $ticket->requested_by,
         ]);
 
         $ticket->loadMissing('requester');
@@ -37,16 +38,16 @@ class TripTicketObserver
             return;
         }
 
-        $actorId    = auth()->id() ?? $ticket->requested_by;
+        $actorId = auth()->id() ?? $ticket->requested_by;
         $fromStatus = $ticket->getOriginal('status');
-        $toStatus   = $ticket->status;
+        $toStatus = $ticket->status;
 
         TripTicketLog::create([
             'trip_ticket_id' => $ticket->id,
-            'from_status'    => $fromStatus,
-            'to_status'      => $toStatus,
-            'changed_by'     => $actorId,
-            'remarks'        => $ticket->remarks,
+            'from_status' => $fromStatus,
+            'to_status' => $toStatus,
+            'changed_by' => $actorId,
+            'remarks' => $ticket->remarks,
         ]);
 
         $actor = User::find($actorId);

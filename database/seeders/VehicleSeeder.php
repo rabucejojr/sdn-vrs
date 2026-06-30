@@ -13,7 +13,7 @@ class VehicleSeeder extends Seeder
         $vehicle = Vehicle::firstOrCreate(
             ['plate_number' => 'SJJ 504'],
             [
-                'name'      => 'Crosswind',
+                'name' => 'Crosswind',
                 'is_active' => true,
             ]
         );

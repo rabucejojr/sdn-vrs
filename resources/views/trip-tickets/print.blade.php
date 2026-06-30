@@ -439,7 +439,7 @@
                 @else
                     <span class="sig-blank"></span>
                 @endif
-                <div class="sig-sub">PSTD, PSTO-Surigao del Norte</div>
+                <div class="sig-sub">PSTD, {{ $organization['full_name'] }}</div>
             </td>
             <td>
                 <div class="sig-role">Approved:</div>

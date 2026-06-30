@@ -16,18 +16,18 @@ class DatabaseSeeder extends Seeder
         $this->call(VehicleSeeder::class);
 
         User::create([
-            'name'              => 'Administrator',
-            'email'             => 'admin@psto-sdn.dost.gov.ph',
-            'password'          => Hash::make('password'),
-            'role'              => 'admin',
+            'name' => 'Administrator',
+            'email' => 'admin@psto-sdn.dost.gov.ph',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
             'email_verified_at' => now(),
         ]);
 
         User::create([
-            'name'              => 'Staff',
-            'email'             => 'staff@psto-sdn.dost.gov.ph',
-            'password'          => Hash::make('password'),
-            'role'              => 'staff',
+            'name' => 'Staff',
+            'email' => 'staff@psto-sdn.dost.gov.ph',
+            'password' => Hash::make('password'),
+            'role' => 'staff',
             'email_verified_at' => now(),
         ]);
     }

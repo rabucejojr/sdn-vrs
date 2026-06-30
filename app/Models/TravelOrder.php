@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\DocumentNumber;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,13 +11,13 @@ class TravelOrder extends Model
 {
     const TRANSPORTATION_MODES = [
         'government_vehicle' => 'Government Vehicle',
-        'commercial_flight'  => 'Commercial Flight',
-        'bus'                => 'Bus',
-        'ferry'              => 'Ferry',
-        'motorcycle'         => 'Motorcycle',
-        'private_vehicle'    => 'Private Vehicle',
-        'ride_sharing'       => 'Ride-sharing',
-        'others'             => 'Others',
+        'commercial_flight' => 'Commercial Flight',
+        'bus' => 'Bus',
+        'ferry' => 'Ferry',
+        'motorcycle' => 'Motorcycle',
+        'private_vehicle' => 'Private Vehicle',
+        'ride_sharing' => 'Ride-sharing',
+        'others' => 'Others',
     ];
 
     protected $fillable = [
@@ -44,6 +45,8 @@ class TravelOrder extends Model
         'expense_transportation_others',
         'approving_officer',
         'approving_position',
+        'regional_director',
+        'regional_director_position',
         'status',
         'remarks',
         'issued_by',
@@ -53,18 +56,18 @@ class TravelOrder extends Model
     protected function casts(): array
     {
         return [
-            'date_start'                     => 'date',
-            'date_end'                       => 'date',
-            'issued_at'                      => 'datetime',
-            'expense_actual'                 => 'boolean',
-            'expense_per_diem'               => 'boolean',
+            'date_start' => 'date',
+            'date_end' => 'date',
+            'issued_at' => 'datetime',
+            'expense_actual' => 'boolean',
+            'expense_per_diem' => 'boolean',
             'expense_per_diem_accommodation' => 'boolean',
-            'expense_per_diem_subsistence'   => 'boolean',
-            'expense_per_diem_incidental'    => 'boolean',
-            'expense_transportation'                      => 'boolean',
-            'expense_transportation_official_vehicle'     => 'boolean',
-            'expense_transportation_public_conveyance'    => 'boolean',
-            'expense_transportation_others'               => 'boolean',
+            'expense_per_diem_subsistence' => 'boolean',
+            'expense_per_diem_incidental' => 'boolean',
+            'expense_transportation' => 'boolean',
+            'expense_transportation_official_vehicle' => 'boolean',
+            'expense_transportation_public_conveyance' => 'boolean',
+            'expense_transportation_others' => 'boolean',
         ];
     }
 
@@ -73,15 +76,9 @@ class TravelOrder extends Model
         parent::boot();
 
         static::creating(function ($to) {
-            $now  = now();
-            $year = $now->format('Y');
-
-            $count = TravelOrder::whereBetween('created_at', [
-                $now->copy()->startOfYear()->toDateTimeString(),
-                $now->copy()->endOfYear()->toDateTimeString(),
-            ])->count() + 1;
-
-            $to->travel_order_number = 'SDN-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+            $to->travel_order_number = DocumentNumber::travelOrder();
+            $to->regional_director ??= config('organization.regional_director');
+            $to->regional_director_position ??= config('organization.regional_director_position');
         });
     }
 
@@ -136,14 +133,14 @@ class TravelOrder extends Model
         }
 
         if ($this->date_start->format('Y') !== $this->date_end->format('Y')) {
-            return $this->date_start->format('F j, Y') . ' – ' . $this->date_end->format('F j, Y');
+            return $this->date_start->format('F j, Y').' – '.$this->date_end->format('F j, Y');
         }
 
         if ($this->date_start->format('m') !== $this->date_end->format('m')) {
-            return $this->date_start->format('F j') . ' – ' . $this->date_end->format('F j, Y');
+            return $this->date_start->format('F j').' – '.$this->date_end->format('F j, Y');
         }
 
-        return $this->date_start->format('F j') . ' – ' . $this->date_end->format('j, Y');
+        return $this->date_start->format('F j').' – '.$this->date_end->format('j, Y');
     }
 
     public function transportationModeLabel(): string

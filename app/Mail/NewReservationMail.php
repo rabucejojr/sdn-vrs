@@ -14,12 +14,15 @@ class NewReservationMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public readonly TripTicket $ticket) {}
+    public function __construct(public readonly TripTicket $ticket)
+    {
+        $this->afterCommit();
+    }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '[SDN-VRS] New Reservation Filed — ' . $this->ticket->ticket_number,
+            subject: '[SDN-VRS] New Reservation Filed — '.$this->ticket->ticket_number,
         );
     }
 

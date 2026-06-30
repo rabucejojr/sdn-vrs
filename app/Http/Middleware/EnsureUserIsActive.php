@@ -11,8 +11,16 @@ class EnsureUserIsActive
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && !Auth::user()->is_active) {
-            Auth::logout();
+        if (Auth::check() && ! Auth::user()->is_active) {
+            Auth::user()->tokens()->delete();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Your account has been deactivated.',
+                ], 403);
+            }
+
+            Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 

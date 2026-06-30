@@ -11,7 +11,10 @@ class NewReservationNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public readonly TripTicket $ticket) {}
+    public function __construct(public readonly TripTicket $ticket)
+    {
+        $this->afterCommit();
+    }
 
     public function via(object $notifiable): array
     {
@@ -21,11 +24,11 @@ class NewReservationNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'ticket_number'  => $this->ticket->ticket_number,
+            'ticket_number' => $this->ticket->ticket_number,
             'requester_name' => $this->ticket->requester?->name ?? 'Unknown',
-            'action'         => 'filed',
-            'message'        => 'New reservation request from ' . ($this->ticket->requester?->name ?? 'Unknown'),
-            'url'            => '/reservations/' . $this->ticket->ticket_number,
+            'action' => 'filed',
+            'message' => 'New reservation request from '.($this->ticket->requester?->name ?? 'Unknown'),
+            'url' => '/reservations/'.$this->ticket->ticket_number,
         ];
     }
 }

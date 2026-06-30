@@ -18,7 +18,9 @@ class ReservationStatusChangedNotification extends Notification implements Shoul
         public readonly string $toStatus,
         public readonly User $actor,
         public readonly ?string $remarks = null,
-    ) {}
+    ) {
+        $this->afterCommit();
+    }
 
     public function via(object $notifiable): array
     {
@@ -31,21 +33,21 @@ class ReservationStatusChangedNotification extends Notification implements Shoul
         $isRequester = $notifiable->id === $this->ticket->requested_by;
 
         $message = match (true) {
-            $isRequester && $this->toStatus === 'approved'    => "Your reservation {$ticket} has been approved.",
+            $isRequester && $this->toStatus === 'approved' => "Your reservation {$ticket} has been approved.",
             $isRequester && $this->toStatus === 'disapproved' => "Your reservation {$ticket} has been disapproved.",
-            $isRequester && $this->toStatus === 'completed'   => "Your reservation {$ticket} has been marked as completed.",
-            $isRequester && $this->toStatus === 'cancelled'   => "Your reservation {$ticket} has been cancelled.",
+            $isRequester && $this->toStatus === 'completed' => "Your reservation {$ticket} has been marked as completed.",
+            $isRequester && $this->toStatus === 'cancelled' => "Your reservation {$ticket} has been cancelled.",
             // Admin receiving a cancellation by staff
-            default => "Reservation {$ticket} was cancelled by " . ($this->ticket->requester?->name ?? 'the requester') . '.',
+            default => "Reservation {$ticket} was cancelled by ".($this->ticket->requester?->name ?? 'the requester').'.',
         };
 
         return [
-            'ticket_number'  => $ticket,
+            'ticket_number' => $ticket,
             'requester_name' => $this->ticket->requester?->name ?? 'Unknown',
-            'action'         => $this->toStatus,
-            'message'        => $message,
-            'remarks'        => $this->remarks,
-            'url'            => '/reservations/' . $ticket,
+            'action' => $this->toStatus,
+            'message' => $message,
+            'remarks' => $this->remarks,
+            'url' => '/reservations/'.$ticket,
         ];
     }
 }

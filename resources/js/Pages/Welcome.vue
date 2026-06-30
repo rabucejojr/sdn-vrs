@@ -3,8 +3,7 @@ import { Head, Link, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 
 const props = defineProps({
-    canLogin:    { type: Boolean, required: true },
-    canRegister: { type: Boolean, required: true },
+    canLogin: { type: Boolean, required: true },
 })
 
 const page = usePage()
@@ -44,13 +43,6 @@ const isLoggedIn = computed(() => page.props.auth?.user != null)
                         >
                             Log In
                         </Link>
-                        <Link
-                            v-if="canRegister"
-                            :href="route('register')"
-                            class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
-                        >
-                            Register
-                        </Link>
                     </template>
                 </nav>
             </div>
@@ -58,8 +50,6 @@ const isLoggedIn = computed(() => page.props.auth?.user != null)
 
         <!-- ── Hero ── -->
         <main class="flex flex-1 flex-col items-center justify-center px-6 py-20 text-center">
-            <!-- <img src="/favicon.ico" alt="SDN VRS Logo" class="mb-6 h-20 w-20 opacity-90" /> -->
-
             <h1 class="text-3xl font-extrabold tracking-tight text-blue-900 sm:text-4xl">
                 SDN Vehicle Reservation System
             </h1>
@@ -68,32 +58,6 @@ const isLoggedIn = computed(() => page.props.auth?.user != null)
                 PSTO Surigao del Norte.
             </p>
 
-            <!-- <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
-                <template v-if="isLoggedIn">
-                    <Link
-                        :href="route('dashboard')"
-                        class="rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow hover:bg-blue-700"
-                    >
-                        Go to Dashboard
-                    </Link>
-                </template>
-                <template v-else>
-                    <Link
-                        v-if="canLogin"
-                        :href="route('login')"
-                        class="rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow hover:bg-blue-700"
-                    >
-                        Log In
-                    </Link>
-                    <Link
-                        v-if="canRegister"
-                        :href="route('register')"
-                        class="rounded-lg border border-blue-600 bg-white px-8 py-3 text-base font-semibold text-blue-600 shadow hover:bg-blue-50"
-                    >
-                        Register
-                    </Link>
-                </template>
-            </div> -->
         </main>
 
         <!-- ── Feature highlights ── -->

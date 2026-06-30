@@ -14,7 +14,9 @@ class UserRoleChangedNotification extends Notification implements ShouldQueue
     public function __construct(
         private readonly string $newRole,
         private readonly User $actor,
-    ) {}
+    ) {
+        $this->afterCommit();
+    }
 
     public function via(): array
     {
@@ -24,9 +26,9 @@ class UserRoleChangedNotification extends Notification implements ShouldQueue
     public function toArray(): array
     {
         return [
-            'action'  => 'role_changed',
+            'action' => 'role_changed',
             'message' => "Your role has been changed to {$this->newRole} by {$this->actor->name}.",
-            'url'     => '/dashboard',
+            'url' => '/dashboard',
         ];
     }
 }

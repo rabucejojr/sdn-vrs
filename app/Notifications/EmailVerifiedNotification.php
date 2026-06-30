@@ -14,9 +14,9 @@ class EmailVerifiedNotification extends Notification
     public function toArray(): array
     {
         return [
-            'action'  => 'email_verified',
+            'action' => 'email_verified',
             'message' => 'Your email address has been successfully verified.',
-            'url'     => '/dashboard',
+            'url' => '/dashboard',
         ];
     }
 }

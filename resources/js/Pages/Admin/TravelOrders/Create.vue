@@ -6,6 +6,7 @@ import PassengerForm from "@/Components/PassengerForm.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import { Head, Link, useForm } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
+import { useTravelOrderConsistency } from "@/composables/useTravelOrderForm.js";
 
 const props = defineProps({
   users: { type: Array, required: true },
@@ -43,6 +44,7 @@ const form = useForm({
   remarks: "",
   passengers: [],
 });
+useTravelOrderConsistency(form);
 
 const needsVehicle = computed(() => form.transportation_mode === "government_vehicle");
 
@@ -145,7 +147,7 @@ function submit() {
               v-if="form.destination_scope === 'outside_sdn'"
               class="mt-1 text-xs text-orange-600"
             >
-              Outside SDN requires Regional Director's approval (Engr. Noel M. Ajoc) —
+              Outside SDN requires Regional Director approval ({{ $page.props.organization.regional_director }}) —
               will appear on the printed Travel Order.
             </p>
           </div>

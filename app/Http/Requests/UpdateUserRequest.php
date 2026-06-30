@@ -16,9 +16,9 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'     => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'position' => ['nullable', 'string', 'max:255'],
-            'email'    => [
+            'email' => [
                 'required',
                 'string',
                 'lowercase',
@@ -26,7 +26,7 @@ class UpdateUserRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->route('user')),
             ],
-            'role'  => ['required', Rule::in(['admin', 'staff'])],
+            'role' => ['required', Rule::in(['admin', 'staff'])],
         ];
     }
 }

@@ -4,15 +4,16 @@ namespace App\Observers;
 
 use App\Models\TravelOrder;
 use App\Models\TravelOrderLog;
+use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 
-class TravelOrderObserver
+class TravelOrderObserver implements ShouldHandleEventsAfterCommit
 {
     public function created(TravelOrder $to): void
     {
         TravelOrderLog::create([
             'travel_order_id' => $to->id,
-            'action'          => 'created',
-            'changed_by'      => $to->issued_by,
+            'action' => 'created',
+            'changed_by' => $to->issued_by,
         ]);
     }
 
@@ -20,16 +21,16 @@ class TravelOrderObserver
     {
         if ($to->wasChanged('status')) {
             $action = match ($to->status) {
-                'issued'    => 'issued',
+                'issued' => 'issued',
                 'cancelled' => 'cancelled',
-                default     => 'updated',
+                default => 'updated',
             };
 
             TravelOrderLog::create([
                 'travel_order_id' => $to->id,
-                'action'          => $action,
-                'changed_by'      => auth()->id() ?? $to->issued_by,
-                'remarks'         => $to->remarks,
+                'action' => $action,
+                'changed_by' => auth()->id() ?? $to->issued_by,
+                'remarks' => $to->remarks,
             ]);
 
             return;
@@ -48,8 +49,8 @@ class TravelOrderObserver
         if ($to->wasChanged($tracked)) {
             TravelOrderLog::create([
                 'travel_order_id' => $to->id,
-                'action'          => 'updated',
-                'changed_by'      => auth()->id() ?? $to->issued_by,
+                'action' => 'updated',
+                'changed_by' => auth()->id() ?? $to->issued_by,
             ]);
         }
     }

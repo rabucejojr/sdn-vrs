@@ -2,14 +2,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import StatusBadge from '@/Components/StatusBadge.vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
     order: { type: Object, required: true },
     logs:  { type: Array,  default: () => [] },
 })
-
-const isAdmin = props.order !== null && window.__page?.props?.auth?.user?.role === 'admin'
+const showAllLogs = ref(false)
+const displayedLogs = computed(() => showAllLogs.value ? props.logs : props.logs.slice(0, 3))
 
 // Cancel form
 const cancelForm = useForm({})
@@ -76,6 +76,11 @@ const ACTION_LABELS = {
         <div class="py-10">
             <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-6">
 
+                <div v-if="order.source_is_newer && $page.props.auth.user.role === 'admin'"
+                     class="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    The source reservation changed after this Travel Order was created. This order remains an independent snapshot; review it before issuing.
+                </div>
+
                 <!-- Action bar -->
                 <div class="flex flex-wrap items-center justify-between gap-3">
 
@@ -103,7 +108,7 @@ const ACTION_LABELS = {
                     <div v-else></div>
 
                     <!-- Print / PDF (right) -->
-                    <div class="flex gap-2">
+                    <div v-if="order.status === 'issued' || ($page.props.auth.user.role === 'admin' && order.status === 'draft')" class="flex gap-2">
                         <a :href="route('travel-orders.print', order.travel_order_number)"
                            target="_blank"
                            class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
@@ -161,14 +166,15 @@ const ACTION_LABELS = {
                         </div>
                         <div v-if="order.is_outside_sdn">
                             <div class="font-medium text-gray-500">Regional Director</div>
-                            <div class="mt-1 text-gray-900">Engr. Noel M. Ajoc</div>
-                            <div class="text-xs text-gray-500">Regional Director</div>
+                            <div class="mt-1 text-gray-900">{{ order.regional_director }}</div>
+                            <div class="text-xs text-gray-500">{{ order.regional_director_position }}</div>
                         </div>
                     </div>
 
                     <!-- Passengers -->
                     <div class="px-6 py-4">
                         <div class="font-medium text-gray-500 text-sm mb-2">Personnel</div>
+                        <div class="overflow-x-auto">
                         <table class="min-w-full text-sm divide-y divide-gray-100">
                             <thead>
                                 <tr class="text-left text-xs font-medium text-gray-500 uppercase">
@@ -183,6 +189,7 @@ const ACTION_LABELS = {
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
                     </div>
 
                 </div>
@@ -194,9 +201,9 @@ const ACTION_LABELS = {
                     </div>
                     <div v-if="logs.length" class="px-6 py-4">
                         <ol class="relative border-l border-gray-200">
-                            <li v-for="(log, i) in logs.slice(0, 3)" :key="log.id" class="mb-6 ml-4 last:mb-0">
+                            <li v-for="(log, i) in displayedLogs" :key="log.id" class="mb-6 ml-4 last:mb-0">
                                 <span class="absolute -left-1.5 mt-1 h-3 w-3 rounded-full border-2 border-white"
-                                      :class="i === logs.length - 1 ? 'bg-blue-500' : 'bg-gray-400'"></span>
+                                      :class="i === displayedLogs.length - 1 ? 'bg-blue-500' : 'bg-gray-400'"></span>
                                 <div v-if="['created', 'issued', 'cancelled'].includes(log.action)"
                                      class="flex flex-wrap items-center gap-2">
                                     <StatusBadge :status="log.action === 'created' ? 'draft' : log.action" />
@@ -222,6 +229,10 @@ const ACTION_LABELS = {
                                 <time class="mt-0.5 block text-xs text-gray-400">{{ formatDate(log.created_at) }}</time>
                             </li>
                         </ol>
+                        <button v-if="logs.length > 3" type="button" @click="showAllLogs = !showAllLogs"
+                                class="mt-3 text-sm font-medium text-blue-600 hover:underline">
+                            {{ showAllLogs ? 'Show recent only' : `Show all ${logs.length} events` }}
+                        </button>
                     </div>
                     <p v-else class="px-6 py-4 text-sm text-gray-400">No activity recorded yet.</p>
                 </div>

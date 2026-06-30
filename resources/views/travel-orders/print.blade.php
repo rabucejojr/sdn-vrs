@@ -322,10 +322,31 @@
                 margin: 14mm 18mm;
             }
         }
+
+        .draft-watermark {
+            position: fixed;
+            top: 42%;
+            left: 16%;
+            z-index: 999;
+            transform: rotate(-28deg);
+            color: rgba(185, 28, 28, .16);
+            font-size: 96pt;
+            font-weight: 800;
+            letter-spacing: 12px;
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body>
+    @php
+        $regionalDirector = $order->regional_director ?: $organization['regional_director'];
+        $regionalDirectorPosition = $order->regional_director_position ?: $organization['regional_director_position'];
+    @endphp
+
+    @if ($order->status === 'draft')
+        <div class="draft-watermark">DRAFT</div>
+    @endif
 
     {{-- ── Header ── --}}
     @php
@@ -389,7 +410,7 @@
                 </td>
                 <td style="border:none;text-align:center;font-size:9.5pt;padding:3px 6px;">{{ $p->user?->position ?? $p->designation ?? '' }}
                 </td>
-                <td style="border:none;text-align:center;font-size:9.5pt;padding:3px 6px;">PSTO-SDN</td>
+                <td style="border:none;text-align:center;font-size:9.5pt;padding:3px 6px;">{{ $organization['short_name'] }}</td>
             </tr>
         @endforeach
         {{-- Spacer row between sections --}}
@@ -620,13 +641,13 @@
                         <div class="sig-label">Approved by:</div>
                         <div class="sig-spacer"></div>
                         @if ($mode === 'screen')
-                            <input type="text" class="sig-input" id="rd-input" value="Engr. Noel M. Ajoc"
+                            <input type="text" class="sig-input" id="rd-input" value="{{ $regionalDirector }}"
                                 placeholder="Regional Director" />
-                            <input type="text" class="sig-position-input" value="Regional Director"
+                            <input type="text" class="sig-position-input" value="{{ $regionalDirectorPosition }}"
                                 placeholder="Position" />
                         @else
-                            <span class="sig-name"><u>Engr. Noel M. Ajoc</u></span>
-                            <div class="sig-position">Regional Director</div>
+                            <span class="sig-name"><u>{{ $regionalDirector }}</u></span>
+                            <div class="sig-position">{{ $regionalDirectorPosition }}</div>
                         @endif
                     </td>
                 </tr>

@@ -27,14 +27,18 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(Verified::class, function ($event) {
             try {
-                $event->user->notify(new EmailVerifiedNotification());
-            } catch (\Throwable) {}
+                $event->user->notify(new EmailVerifiedNotification);
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
         });
 
         Event::listen(PasswordReset::class, function ($event) {
             try {
-                $event->user->notify(new PasswordChangedNotification());
-            } catch (\Throwable) {}
+                $event->user->notify(new PasswordChangedNotification);
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
         });
     }
 }

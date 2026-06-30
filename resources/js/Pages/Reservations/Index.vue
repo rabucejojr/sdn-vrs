@@ -32,12 +32,15 @@ watch([status, from, to], applyFilters)
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">Reservations</h2>
-                <Link
-                    :href="route('reservations.create')"
-                    class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
-                >
-                    New Reservation
-                </Link>
+                <div class="flex gap-2">
+                    <a v-if="$page.props.auth.user.role === 'admin'"
+                       :href="route('admin.reservations.export', { status: status || undefined, from: from || undefined, to: to || undefined })"
+                       class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Export</a>
+                    <Link :href="route('reservations.create')"
+                          class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700">
+                        New Reservation
+                    </Link>
+                </div>
             </div>
         </template>
 

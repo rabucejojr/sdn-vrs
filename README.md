@@ -36,8 +36,8 @@ The system manages the office's single service vehicle — **Isuzu Crosswind (Pl
 - View full reservation history with status and date range filters
 
 ### Trip Ticket Workflow
-- **Status flow:** `pending` → `approved` / `disapproved` → `completed`; any status can be `cancelled`
-- Auto-generated ticket numbers in the format `Crosswind-YYYY-MM-XXXX` (zero-padded sequence, resets monthly)
+- **Status flow:** `pending` → `approved` / `disapproved`; approved trips can become `completed`; pending or approved trips can be `cancelled`
+- Concurrency-safe ticket numbers in the format `{Vehicle}-YYYY-MM-XXXX` (zero-padded sequence, resets monthly)
 - Admin approve/disapprove with optional remarks
 - Mark approved trips as completed
 
@@ -76,7 +76,12 @@ The system manages the office's single service vehicle — **Isuzu Crosswind (Pl
 
 ### Vehicle Registry
 - Admin-managed vehicle list (`/admin/vehicles`)
-- Active vehicle auto-assigned to new reservations — never input by users
+- Exactly one active/default vehicle is auto-assigned to new reservations
+
+### Read-only API
+- Expiring Sanctum tokens are managed from the Profile page
+- Staff tokens can read only their reservations; admins can read all reservations
+- See [`docs/openapi.yaml`](docs/openapi.yaml) for the API contract
 
 ---
 
@@ -156,12 +161,15 @@ php artisan serve
 
 Or with Laragon, simply start Apache/Nginx and visit `http://sdn-vrs.test`.
 
+For production deployment, queues, backups, rollback, and staging checks, see
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
 ---
 
 ## Ticket Number Format
 
 ```
-Crosswind-{YYYY}-{MM}-{SEQUENCE}
+{VEHICLE}-{YYYY}-{MM}-{SEQUENCE}
 ```
 
 Example: `Crosswind-2025-07-0001` — first reservation filed in July 2025. Sequence resets each month per vehicle.

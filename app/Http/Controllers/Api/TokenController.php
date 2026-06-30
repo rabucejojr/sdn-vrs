@@ -14,18 +14,26 @@ class TokenController extends Controller
             'token_name' => ['required', 'string', 'max:100'],
         ]);
 
-        $token = $request->user()->createToken($request->token_name);
+        $expiresAt = now()->addDays(config('api.token_expiration_days'));
+        $token = $request->user()->createToken(
+            $request->token_name,
+            ['reservations:read', 'vehicles:read'],
+            $expiresAt,
+        );
 
         return response()->json([
-            'token'      => $token->plainTextToken,
-            'name'       => $request->token_name,
-            'id'         => $token->accessToken->id,
+            'token' => $token->plainTextToken,
+            'name' => $request->token_name,
+            'id' => $token->accessToken->id,
+            'abilities' => $token->accessToken->abilities,
+            'expires_at' => $expiresAt->toIso8601String(),
         ], 201);
     }
 
     public function index(Request $request): JsonResponse
     {
-        $tokens = $request->user()->tokens()->get(['id', 'name', 'last_used_at', 'created_at']);
+        $tokens = $request->user()->tokens()
+            ->get(['id', 'name', 'abilities', 'last_used_at', 'expires_at', 'created_at']);
 
         return response()->json($tokens);
     }

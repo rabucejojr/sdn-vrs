@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import StatusBadge from '@/Components/StatusBadge.vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
     ticket: { type: Object, required: true },
@@ -9,6 +10,9 @@ const props = defineProps({
 })
 
 const actionForm = useForm({ remarks: '' })
+const cancelForm = useForm({})
+const showAllLogs = ref(false)
+const displayedLogs = computed(() => showAllLogs.value ? props.logs : props.logs.slice(0, 3))
 
 function approve() {
     actionForm.patch(route('admin.reservations.approve', props.ticket.ticket_number))
@@ -21,7 +25,7 @@ function complete() {
 }
 function cancel() {
     if (confirm('Cancel this reservation?')) {
-        useForm({}).delete(route('reservations.cancel', props.ticket.ticket_number))
+        cancelForm.delete(route('reservations.cancel', props.ticket.ticket_number))
     }
 }
 
@@ -31,8 +35,6 @@ function openPrint() {
 function downloadPdf() {
     window.location.href = route('reservations.pdf', props.ticket.ticket_number)
 }
-
-const isAdmin = () => window.__page?.props?.auth?.user?.role === 'admin'
 
 function formatDate(value) {
     if (!value) return '—'
@@ -72,17 +74,18 @@ function formatDate(value) {
                     <!-- Action buttons (left) -->
                     <div class="flex flex-wrap gap-2">
                         <Link v-if="$page.props.auth.user.role === 'admin'
-                                  ? ['pending', 'approved', 'disapproved'].includes(ticket.status)
+                                  ? ['pending', 'approved'].includes(ticket.status)
                                   : ticket.status === 'pending'"
                               :href="route('reservations.edit', ticket.ticket_number)"
                               class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
                             Edit
                         </Link>
-                        <button v-if="ticket.status === 'pending'" type="button"
+                        <button v-if="['pending', 'approved'].includes(ticket.status)" type="button"
                                 class="inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-600 shadow-sm hover:bg-red-50"
                                 @click="cancel">
                             Cancel Reservation
                         </button>
+                        <p v-if="cancelForm.errors.status" class="w-full text-sm text-red-600">{{ cancelForm.errors.status }}</p>
                         <Link v-if="$page.props.auth.user.role === 'admin' && ticket.status === 'approved' && !ticket.travel_order_number"
                               :href="route('admin.travel-orders.generate-form', ticket.ticket_number)"
                               class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700">
@@ -96,7 +99,7 @@ function formatDate(value) {
                     </div>
 
                     <!-- Print / PDF (right) -->
-                    <div class="flex gap-2">
+                    <div v-if="['approved', 'completed'].includes(ticket.status)" class="flex gap-2">
                         <button type="button"
                                 class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
                                 @click="openPrint">
@@ -222,6 +225,9 @@ function formatDate(value) {
                             Mark Completed
                         </button>
                     </div>
+                    <p v-if="Object.keys(actionForm.errors).length" class="mt-3 text-sm text-red-600">
+                        {{ Object.values(actionForm.errors)[0] }}
+                    </p>
                 </div>
 
                 <!-- ── Activity log ── -->
@@ -231,9 +237,9 @@ function formatDate(value) {
                     </div>
                     <div v-if="logs.length" class="px-6 py-4">
                         <ol class="relative border-l border-gray-200">
-                            <li v-for="(log, i) in logs.slice(0, 3)" :key="log.id" class="mb-6 ml-4 last:mb-0">
+                            <li v-for="(log, i) in displayedLogs" :key="log.id" class="mb-6 ml-4 last:mb-0">
                                 <span class="absolute -left-1.5 mt-1 h-3 w-3 rounded-full border-2 border-white"
-                                      :class="i === logs.length - 1 ? 'bg-blue-500' : 'bg-gray-400'"></span>
+                                      :class="i === displayedLogs.length - 1 ? 'bg-blue-500' : 'bg-gray-400'"></span>
                                 <div v-if="!['edited', 'printed', 'pdf_downloaded'].includes(log.to_status)"
                                      class="flex flex-wrap items-center gap-2">
                                     <StatusBadge v-if="log.from_status" :status="log.from_status" />
@@ -257,6 +263,10 @@ function formatDate(value) {
                                 <time class="mt-0.5 block text-xs text-gray-400">{{ formatDate(log.created_at) }}</time>
                             </li>
                         </ol>
+                        <button v-if="logs.length > 3" type="button" @click="showAllLogs = !showAllLogs"
+                                class="mt-3 text-sm font-medium text-blue-600 hover:underline">
+                            {{ showAllLogs ? 'Show recent only' : `Show all ${logs.length} events` }}
+                        </button>
                     </div>
                     <p v-else class="px-6 py-4 text-sm text-gray-400">No activity recorded yet.</p>
                 </div>

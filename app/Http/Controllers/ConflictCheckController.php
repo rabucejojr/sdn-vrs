@@ -12,11 +12,11 @@ class ConflictCheckController extends Controller
     {
         $request->validate([
             'date_start' => ['required', 'date'],
-            'date_end'   => ['nullable', 'date', 'after_or_equal:date_start'],
+            'date_end' => ['nullable', 'date', 'after_or_equal:date_start'],
         ]);
 
         $dateStart = $request->query('date_start');
-        $dateEnd   = $request->query('date_end', $dateStart);
+        $dateEnd = $request->query('date_end', $dateStart);
 
         // Resolve optional ticket_number exclusion (used during edits)
         $excludeTicketNumber = $request->query('exclude');
@@ -29,7 +29,7 @@ class ConflictCheckController extends Controller
 
         return response()->json([
             'conflict' => (bool) $conflict,
-            'ticket'   => $conflict?->ticket_number,
+            'ticket' => $conflict?->ticket_number,
         ]);
     }
 }

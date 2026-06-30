@@ -21,6 +21,11 @@ class UserController extends Controller
 {
     public function index(Request $request): Response
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'sort' => ['nullable', 'in:name_asc,name_desc,role_asc,created_at_asc,created_at_desc'],
+        ]);
+
         $query = User::query()
             ->leftJoin(DB::raw('(SELECT user_id, MAX(last_activity) as last_activity FROM sessions GROUP BY user_id) as sess'), 'users.id', '=', 'sess.user_id')
             ->select('users.*', 'sess.last_activity')
@@ -35,23 +40,23 @@ class UserController extends Controller
 
         $sort = $request->query('sort', 'created_at_desc');
         match ($sort) {
-            'name_asc'        => $query->orderBy('users.name'),
-            'name_desc'       => $query->orderByDesc('users.name'),
-            'role_asc'        => $query->orderBy('users.role')->orderBy('users.name'),
-            'created_at_asc'  => $query->orderBy('users.created_at'),
-            default           => $query->orderByDesc('users.created_at'),
+            'name_asc' => $query->orderBy('users.name'),
+            'name_desc' => $query->orderByDesc('users.name'),
+            'role_asc' => $query->orderBy('users.role')->orderBy('users.name'),
+            'created_at_asc' => $query->orderBy('users.created_at'),
+            default => $query->orderByDesc('users.created_at'),
         };
 
         $users = $query->paginate(15)->withQueryString();
 
         return Inertia::render('Admin/Users/Index', [
-            'users'   => $users,
+            'users' => $users,
             'filters' => $request->only(['search', 'sort']),
-            'stats'   => [
-                'total'    => User::count(),
-                'admins'   => User::where('role', 'admin')->count(),
-                'staff'    => User::where('role', 'staff')->count(),
-                'active'   => User::where('is_active', true)->count(),
+            'stats' => [
+                'total' => User::count(),
+                'admins' => User::where('role', 'admin')->count(),
+                'staff' => User::where('role', 'staff')->count(),
+                'active' => User::where('is_active', true)->count(),
                 'inactive' => User::where('is_active', false)->count(),
             ],
         ]);
@@ -65,11 +70,11 @@ class UserController extends Controller
     public function store(StoreUserRequest $request): RedirectResponse
     {
         $user = User::create([
-            'name'      => $request->name,
-            'position'  => $request->position,
-            'email'     => $request->email,
-            'role'      => $request->role,
-            'password'  => Hash::make(Str::password(32)),
+            'name' => $request->name,
+            'position' => $request->position,
+            'email' => $request->email,
+            'role' => $request->role,
+            'password' => Hash::make(Str::password(32)),
             'is_active' => true,
         ]);
 
@@ -92,27 +97,27 @@ class UserController extends Controller
             ->paginate(10, ['*'], 'tickets_page');
 
         $stats = [
-            'total'       => $user->tripTickets()->count(),
-            'pending'     => $user->tripTickets()->where('status', 'pending')->count(),
-            'approved'    => $user->tripTickets()->where('status', 'approved')->count(),
-            'completed'   => $user->tripTickets()->where('status', 'completed')->count(),
+            'total' => $user->tripTickets()->count(),
+            'pending' => $user->tripTickets()->where('status', 'pending')->count(),
+            'approved' => $user->tripTickets()->where('status', 'approved')->count(),
+            'completed' => $user->tripTickets()->where('status', 'completed')->count(),
             'disapproved' => $user->tripTickets()->where('status', 'disapproved')->count(),
-            'cancelled'   => $user->tripTickets()->where('status', 'cancelled')->count(),
+            'cancelled' => $user->tripTickets()->where('status', 'cancelled')->count(),
         ];
 
         return Inertia::render('Admin/Users/Show', [
-            'user'         => array_merge($user->toArray(), [
+            'user' => array_merge($user->toArray(), [
                 'last_activity' => $lastActivity,
             ]),
-            'tickets'      => $tickets->through(fn ($t) => [
-                'ticket_number'     => $t->ticket_number,
+            'tickets' => $tickets->through(fn ($t) => [
+                'ticket_number' => $t->ticket_number,
                 'travel_date_label' => $t->travelDateLabel(),
-                'is_multi_day'      => $t->isMultiDay(),
-                'destination'       => $t->destination,
-                'status'            => $t->status,
-                'date_filed'        => $t->date_filed->format('M d, Y'),
+                'is_multi_day' => $t->isMultiDay(),
+                'destination' => $t->destination,
+                'status' => $t->status,
+                'date_filed' => $t->date_filed->format('M d, Y'),
             ]),
-            'ticketStats'  => $stats,
+            'ticketStats' => $stats,
         ]);
     }
 
@@ -123,10 +128,10 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $oldRole  = $user->role;
+        $oldRole = $user->role;
         $oldEmail = $user->email;
 
-        if ($request->role !== 'admin' || !$user->is_active) {
+        if ($request->role !== 'admin' || ! $user->is_active) {
             $this->ensureNotLastAdmin($user);
         }
 
@@ -134,10 +139,10 @@ class UserController extends Controller
             return back()->withErrors(['role' => 'You cannot remove your own administrator role.']);
         }
 
-        $user->name     = $request->name;
+        $user->name = $request->name;
         $user->position = $request->position;
-        $user->email    = $request->email;
-        $user->role     = $request->role;
+        $user->email = $request->email;
+        $user->role = $request->role;
 
         if ($oldEmail !== $request->email) {
             $user->email_verified_at = null;
@@ -162,9 +167,11 @@ class UserController extends Controller
         if ($user->is_active) {
             $this->ensureNotLastAdmin($user);
             $user->notify(new UserDeactivatedNotification(auth()->user()));
+            $user->tokens()->delete();
+            DB::table('sessions')->where('user_id', $user->id)->delete();
         }
 
-        $user->is_active = !$user->is_active;
+        $user->is_active = ! $user->is_active;
         $user->save();
 
         $action = $user->is_active ? 'activated' : 'deactivated';
