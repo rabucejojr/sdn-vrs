@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -69,5 +70,43 @@ class PasswordResetTest extends TestCase
 
             return true;
         });
+    }
+
+    public function test_newly_created_account_can_set_its_password_from_setup_email(): void
+    {
+        Notification::fake();
+
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'email_verified_at' => now(),
+        ]);
+
+        $this->actingAs($admin)->post(route('admin.users.store'), [
+            'name' => 'New Staff Member',
+            'position' => 'Staff',
+            'email' => 'new.staff@example.com',
+            'role' => 'staff',
+        ])->assertSessionHasNoErrors();
+
+        $user = User::where('email', 'new.staff@example.com')->firstOrFail();
+        $this->post(route('logout'));
+
+        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+            $response = $this->post(route('password.store'), [
+                'token' => $notification->token,
+                'email' => $user->email,
+                'password' => 'new-secure-password',
+                'password_confirmation' => 'new-secure-password',
+            ]);
+
+            $response
+                ->assertSessionHasNoErrors()
+                ->assertRedirect(route('login'));
+
+            return true;
+        });
+
+        $this->assertTrue(Hash::check('new-secure-password', $user->fresh()->password));
+        $this->assertNotNull($user->fresh()->email_verified_at);
     }
 }
